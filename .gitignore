@@ -1,2 +1,309 @@
+# ============================================================================
+# SE333 Final Project - Intelligent Testing Agent
+# This file is partly based off of https://www.toptal.com/developers/gitignore/api/java,windows,linux,maven,python,c,intellij,eclipse,netbeans,macos,git,node,venv,virtualenv
+# This file was overhauled by generative AI.
+# ============================================================================
+
+# ====================
+# Project-Specific
+# ====================
 Final_Project_Instructions.md
-supplementals
+supplementals/
+
+# ====================
+# Python
+# ====================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.env
+.venv*/
+*.env
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# ====================
+# Java
+# ====================
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# JVM crash logs
+hs_err_pid*
+replay_pid*
+
+# ====================
+# Maven
+# ====================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ====================
+# JaCoCo Coverage Reports
+# ====================
+jacoco.exec
+jacoco/
+**/jacoco.xml
+**/site/jacoco/
+
+# ====================
+# Test Reports
+# ====================
+**/surefire-reports/
+**/failsafe-reports/
+**/test-output/
+
+# ====================
+# IDEs
+# ====================
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.recommenders
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ====================
+# Operating System
+# ====================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+.nfs*
+
+# ====================
+# Git
+# ====================
+*.orig
+*.patch
+*.diff
+
+# ====================
+# Logs and Databases
+# ====================
+*.log
+*.sql
+*.sqlite
+*.db
+
+# ====================
+# Temporary Files
+# ====================
+*.tmp
+*.temp
+*.cache
+*.bak
+*.swp
+*.swo
+*~
+
+# ====================
+# Node.js (if any)
+# ====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ====================
+# Documentation Build
+# ====================
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.pdf
+_minted-*/
+*.nav
+*.snm
+*.vrb
+
+# ====================
+# MCP Server
+# ====================
+.mcp/
+*.mcp.json
+mcp-logs/
+
+# ====================
+# Sensitive Data
+# ====================
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json
+credentials.json
+.env.local
+.env.*.local
+
+# ====================
+# Build Artifacts
+# ====================
+*.o
+*.a
+*.lib
+*.exe
+*.dll
+*.dylib
