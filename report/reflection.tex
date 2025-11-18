@@ -1,0 +1,191 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Intelligent Test Generation with Model Context Protocol: A Reflection on Building an Automated Testing Agent}
+
+\author{\IEEEauthorblockN{Kellen Siczka}
+\IEEEauthorblockA{\textit{Jarvis College of Computing and Digital Media} \\
+\textit{DePaul University}\\
+Chicago, Illinois, USA \\
+ksiczka@depaul.edu}}
+
+\maketitle
+
+\begin{abstract}
+This reflection documents my exploration of intelligent software testing through the Model Context Protocol (MCP), examining both technical achievements and the fundamental role of human expertise in AI-assisted development. I implemented a comprehensive testing agent featuring 15 automated tools using FastMCP 2.13.1, Python 3.12, and JaCoCo 0.8.11 for coverage analysis. Testing against the Apache Commons Lang3 benchmark (2300 tests, 158 classes analyzed), the system achieved 93.50\% line coverage, 90.15\% branch coverage, and 93.70\% method coverage. The agent automates the complete testing workflow: executing Maven tests with coverage instrumentation, parsing JaCoCo reports, identifying uncovered code segments, detecting code smells, and integrating Git workflow automation for continuous iteration. This project revealed critical insights about build automation failure handling, MCP architecture, and the practical limitations of AI-generated content. Most significantly, I discovered that 83 failing tests initially blocked JaCoCo report generation until I implemented Maven's \texttt{-Dmaven.test.failure.ignore=true} flag---a solution that emerged from human problem-solving, not AI suggestion. This experience reinforces my core belief: AI augments human capability through mechanical acceleration, but cannot replace human judgment, deep domain expertise, or creative problem-solving in software engineering.
+\end{abstract}
+
+\section{Introduction}
+
+My fascination with automated systems came from a very young age---building with Legos, experimenting with PCs, immersing myself in technical problem-solving. By the time I reached DePaul as a Computer Science major, I understood that the best systems weren't just functional; they were intelligent, adaptive, and resilient. Software testing, however, remained one of the most tedious yet critical aspects of development. Manual testing is exhausting. Developers write tests, run them, analyze coverage, iterate---a cycle that consumes countless hours while still missing edge cases and regressions.
+
+When I learned about the Model Context Protocol (MCP) and its potential for AI-assisted development, I saw an opportunity to explore how intelligent agents could transform this workflow. Could we build a system that not only executes tests but understands coverage gaps, detects code quality issues, and iteratively improves test suites? More importantly, could we identify the precise boundary between what AI can effectively automate and what requires irreplaceable human expertise? This project aimed to answer these questions by developing a comprehensive testing agent using FastMCP, Maven, and JaCoCo---tools that together could automate the entire testing lifecycle while maintaining human primacy in critical decision-making.
+
+My approach to this project reflects my broader philosophy on AI integration: AI serves as an augmentative force---accelerating routine tasks, providing insights, and generating scaffolding---while core design, strategy, and nuanced decision-making remain firmly human-driven. I recognize that generative AI tools, despite their utility, are inherently flawed with limitations such as hallucinations, lack of context retention, and superficial understanding of complex domains. Therefore, I maintained strict ownership of all architectural decisions, rigorously validating AI-generated content through cross-referencing with authoritative sources and ensuring alignment with established best practices.
+
+What began as technical exploration became a profound lesson in both the fragility of build systems and the irreplaceable value of human problem-solving. This reflection documents the technical architecture I implemented, the critical challenges that emerged, and the clear delineation between AI's mechanical capabilities and human expertise that this project revealed.
+
+\section{Methodology}
+
+\subsection{Technical Architecture}
+
+The testing agent leverages FastMCP 2.13.1 as its foundation, providing a Python-based framework for creating MCP servers that integrate with VS Code's AI chat. The system architecture consists of five functional categories, each addressing a specific aspect of the testing workflow:
+
+\textbf{Maven/Testing Tools}: \texttt{run\_maven\_tests()} executes \texttt{mvn clean test} with JaCoCo instrumentation, capturing coverage data during test execution. \texttt{analyze\_coverage()} parses the generated \texttt{jacoco.xml} report using Python's ElementTree library, calculating line, branch, method, and class coverage percentages. \texttt{identify\_uncovered\_code()} filters classes below 80\% coverage threshold and reports specific missed line ranges, enabling targeted test generation.
+
+\textbf{Git Automation}: Five tools (\texttt{git\_status}, \texttt{git\_add\_all}, \texttt{git\_commit}, \texttt{git\_push}, \texttt{git\_pull\_request}) provide complete version control workflow automation, enabling continuous integration practices and facilitating iterative development cycles.
+
+\textbf{Code Analysis}: \texttt{analyze\_java\_class()} extracts method signatures from Java source files, enabling test template generation. \texttt{detect\_code\_smells()} identifies quality issues including long methods ($>$50 lines), large classes ($>$500 lines), and magic numbers, guiding refactoring efforts. \texttt{generate\_test\_template()} creates JUnit scaffolding based on extracted method signatures.
+
+\textbf{Test Generation}: \texttt{generate\_boundary\_tests()} creates boundary value analysis test cases. \texttt{generate\_junit\_test()} provides AI-assisted test generation leveraging chat context.
+
+\textbf{Utility}: \texttt{calculator()} serves as a Phase 1 demonstration tool for basic MCP functionality.
+
+The agent runs on SSE (Server-Sent Events) transport at \texttt{http://127.0.0.1:8000/sse}, using FastMCP's decorator pattern (\texttt{@mcp.tool()}) to expose Python functions as MCP tools accessible through VS Code Chat.
+
+\subsection{Benchmark Configuration}
+
+Testing was performed against Apache Commons Lang3 3.2-SNAPSHOT, a mature Java utility library with 158 classes and 2300 test cases. The Maven POM was configured with JaCoCo 0.8.11 plugin, binding report generation to the verify phase:
+
+This configuration instruments bytecode during test execution, capturing coverage data that is subsequently processed into HTML, XML, and CSV reports in \texttt{target/site/jacoco/}.
+
+\subsection{Development Environment}
+
+The development environment utilized Python 3.12 within a virtual environment, FastMCP 2.13.1 with MCP 1.21.2 (CLI tools), Java 11+, Maven 3.6+, and VS Code with MCP integration. All tools were selected for their maturity, active maintenance, and strong community support.
+
+\section{Results \& Discussion}
+
+\subsection{Coverage Analysis}
+
+The JaCoCo analysis of Apache Commons Lang3 revealed the following metrics (Table \ref{tab:coverage}):
+
+\begin{table}[h]
+\centering
+\caption{JaCoCo Coverage Analysis Results}
+\label{tab:coverage}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Metric} & \textbf{Covered} & \textbf{Total} & \textbf{Coverage} \\
+\midrule
+Instructions & 51,668 & 54,972 & 93.99\% \\
+Lines & 11,236 & 12,017 & 93.50\% \\
+Branches & 7,322 & 8,122 & 90.15\% \\
+Methods & 2,319 & 2,475 & 93.70\% \\
+Classes & 158 & 158 & 100.00\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Test execution summary (Table \ref{tab:tests}):
+
+\begin{table}[h]
+\centering
+\caption{Test Execution Summary}
+\label{tab:tests}
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Category} & \textbf{Count} \\
+\midrule
+Total Tests & 2300 \\
+Passing & 2217 \\
+Failures & 45 \\
+Errors & 38 \\
+Skipped & 4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The \texttt{identify\_uncovered\_code()} tool identified 166 methods with $<$50\% coverage, providing actionable targets for test generation. Top priority methods included \texttt{JavaUnicodeEscaper.above()} (0\% coverage, 1 line missed), \texttt{UnicodeEscaper.toUtf16Escape()} (0\% coverage), and \texttt{RandomStringUtils.random()} (0\% coverage). This targeted approach enables focused test development rather than exhaustive coverage efforts.
+
+\subsection{The JaCoCo Challenge: Human Problem-Solving vs. AI Limitations}
+
+Initially, my understanding was limited. I ran \texttt{mvn clean test} expecting JaCoCo reports to generate automatically, yet the \texttt{target/site/jacoco/} directory remained empty. This was deeply frustrating---the configuration appeared correct, the plugin was properly bound to the verify phase, yet no reports materialized.
+
+The root cause was Maven's fail-fast behavior. With 83 test failures (45 failures + 38 errors), Maven exits during the test phase before reaching the verify phase where JaCoCo report generation was bound. This is Maven's default behavior: if tests fail, the build fails, and subsequent phases are skipped. While this makes sense for production CI/CD pipelines where test failures should halt deployment, it creates a problem for coverage analysis during development---you need the report precisely when tests are failing to understand what needs attention.
+
+Here emerged a critical distinction between AI assistance and human expertise. When I consulted AI tools for help with this issue, I received suggestions for non-existent Maven flags and superficial explanations of JaCoCo configuration---classic hallucinations stemming from statistical pattern matching rather than genuine understanding. The AI provided syntax help and basic documentation references, but lacked the architectural insight to recognize the lifecycle phase dependency problem.
+
+The solution required deep understanding of Maven's lifecycle phases (compile $\rightarrow$ test $\rightarrow$ verify $\rightarrow$ install) and how to override failure behavior---knowledge I gained through systematic experimentation and consultation of authoritative Maven documentation. I implemented two approaches: using the \texttt{-Dmaven.test.failure.ignore=true} flag to allow Maven to continue past test failures, and explicitly invoking \texttt{mvn jacoco:report} after test execution. The working command became:
+
+\begin{verbatim}
+mvn clean test -Dmaven.test.failure.ignore=true
+  && mvn jacoco:report
+\end{verbatim}
+
+This experience exemplifies a fundamental principle: AI excels at mechanical tasks like boilerplate generation and syntax reference, but cannot replace the critical thinking required for architectural problem-solving. The JaCoCo solution emerged from human reasoning about build system design, not from AI suggestion. As stated in my Universal Statement on AI Integration: ``AI augments human capability; it does not replace human judgment, creativity, or accountability.'' This project validated that principle through concrete technical challenge.
+
+\subsection{FastMCP Architecture Discoveries: The Value of Experimentation}
+
+Another fascinating discovery emerged when attempting to programmatically invoke MCP tools for report data collection. FastMCP's \texttt{@mcp.tool()} decorator wraps functions as \texttt{FunctionTool} objects, which cannot be called directly as Python functions. This is intentional---MCP tools are designed for protocol-based invocation through VS Code Chat or API clients, not as regular function calls. This architectural decision maintains clean separation between tool implementation and invocation, but it means data collection for reporting requires either parsing JaCoCo XML directly or invoking tools through proper MCP channels.
+
+This discovery emerged through hands-on experimentation, not AI guidance. When I initially attempted direct function calls, the resulting \texttt{FunctionTool} callable errors were opaque. AI-assisted debugging provided basic syntax explanations but failed to convey the architectural ``why'' behind FastMCP's design. Only through reading FastMCP source code and experimenting with different invocation patterns did I understand the intentional separation between tool definition and execution.
+
+This constraint reveals an important principle: framework abstractions exist for good reasons. FastMCP's decorator pattern ensures tools maintain consistent interfaces, proper error handling, and standardized response formats. Circumventing these abstractions to call tools directly would bypass those benefits. Understanding this required domain expertise in software architecture---recognizing design patterns, evaluating trade-offs, and appreciating separation of concerns. These are precisely the areas where human expertise remains irreplaceable, as they demand creative problem-solving and nuanced understanding that statistical language models cannot provide.
+
+\subsection{Tool Selection Rationale: Human Strategy, AI Implementation}
+
+The 15 tools were selected based on coverage-driven development principles---a strategic decision requiring understanding of software testing theory, build automation patterns, and workflow optimization. Coverage analysis tools (\texttt{analyze\_coverage}, \texttt{identify\_uncovered\_code}) provide visibility into test gaps. Code analysis tools (\texttt{analyze\_java\_class}, \texttt{detect\_code\_smells}) enable quality assessment and test template generation. Maven integration (\texttt{run\_maven\_tests}) automates execution with instrumentation. Git automation provides version control integration for iterative development. Test generation tools (\texttt{generate\_boundary\_tests}, \texttt{generate\_junit\_test}) leverage AI assistance for creating new tests targeting uncovered code.
+
+This toolkit addresses the complete testing workflow: identify gaps, generate tests, execute with coverage, analyze results, commit improvements, iterate. Each tool serves a specific purpose while integrating into the larger workflow. The strategic architecture---determining which capabilities to expose, how they interconnect, and what workflow they enable---represents human design thinking. AI assisted in the mechanical implementation: generating boilerplate code, formatting documentation, and providing quick syntax references. However, the fundamental design decisions emerged from my understanding of software testing principles, not from AI recommendation.
+
+This delineation reflects a critical insight from this project: AI excels at ``what'' (implementing defined specifications) but struggles with ``why'' (strategic rationale). The decision to prioritize Git automation over mutation testing, to implement specification-based test generation tools, to structure the MCP server with categorical tool organization---these required domain expertise, understanding of testing theory, and judgment about project scope. AI cannot make these strategic choices because it lacks genuine understanding of software engineering principles and project context.
+
+\subsection{Limitations, AI Realities, and Future Work}
+
+The current implementation has several limitations that illuminate the boundary between AI capability and human expertise. Test generation tools require substantial manual refinement---AI-generated tests often exhibit surface-level correctness but miss edge cases, fail to properly assert complex state, or test implementation details rather than behavioral contracts. This reflects a fundamental limitation: AI can pattern-match against existing test structures but cannot reason about what makes a test valuable.
+
+The system doesn't yet support mutation testing (e.g., PIT mutation analysis) for assessing test quality beyond coverage metrics---a capability that would reveal whether tests actually detect defects or merely execute code. Specification-based test generation from requirements or documentation isn't fully implemented, as current tools require structured input formats rather than natural language parsing. Integration with other testing frameworks beyond JUnit would broaden applicability.
+
+Throughout development, I encountered AI's inherent limitations: context retention failures requiring repeated clarification, hallucinations about non-existent Maven flags or JaCoCo options, surface-level explanations that provided syntax without architectural understanding, and complete absence of creative problem-solving for novel challenges. These limitations validate my core belief: AI is powerful for accelerating mechanical tasks and providing reference information, but human expertise, critical thinking, and creative problem-solving remain irreplaceable in software engineering.
+
+Future enhancements could include mutation testing integration to evaluate defect detection capability, natural language processing of documentation to generate specification-based tests, machine learning models trained on successful test patterns to improve generation quality, and integration with defect prediction models to prioritize testing efforts. However, these enhancements will require the same human-AI symbiosis: strategic design and quality validation by humans, mechanical implementation accelerated by AI.
+
+\subsection{Repository Reconstruction Note}
+
+This project's Git history was lost due to repository recreation during development. While this doesn't affect the technical implementation, it removes visibility into the iterative development process and decision-making that shaped the final system. Future projects will maintain continuous commit history to preserve this valuable context.
+
+\section{AI Usage and Ethical Reflection}
+
+Transparency demands that I acknowledge the role of AI in this project's execution, including this reflection document. I utilized Claude Sonnet 4.5 (via GitHub Copilot) for drafting assistance, LaTeX formatting, prose refinement, and documentation structuring. However, the fundamental insights documented here are exclusively human-generated: the JaCoCo problem discovery and resolution, the FastMCP architectural understanding, the tool selection rationale, and the coverage analysis interpretation all emerged from my own problem-solving and domain expertise.
+
+AI assisted in articulating these insights---improving sentence structure, suggesting transitions, formatting tables---but did not generate the understanding itself. This distinction matters. As stated in my Universal Statement on AI Integration and Ethical Practice: ``AI augments human capability; it does not replace human judgment, creativity, or accountability.'' This project validates that principle through concrete experience.
+
+I believe that generative AI, as a machine, can emulate human creation but can never replace human intellect, creativity, or the fundamental value of human experience. The challenges I encountered---Maven lifecycle phase dependencies, FastMCP decorator architecture, coverage analysis interpretation---required not just information retrieval but creative problem-solving, pattern recognition across domains, and the ability to reason about trade-offs. These capabilities remain distinctly human.
+
+My engagement with AI tools does not constitute endorsement of their ethical or environmental implications. I recognize the significant environmental impact of AI systems and the complex intellectual property concerns surrounding training data. However, as AI becomes increasingly integrated into development environments, often to the point of being unavoidable, I choose transparent engagement over prohibition, documenting usage honestly and advocating for more sustainable and equitable approaches.
+
+\section{Conclusion}
+
+This project explored how Model Context Protocol enables intelligent automation of software testing workflows while illuminating the irreplaceable role of human expertise. By implementing 15 integrated tools covering test execution, coverage analysis, code quality assessment, and workflow automation, I created a system that transforms testing from manual drudgery into an AI-assisted iterative process---but one that depends fundamentally on human judgment and domain knowledge.
+
+The most valuable lessons emerged from challenges that AI could not solve: discovering that 83 failing tests blocked JaCoCo report generation required understanding Maven's lifecycle architecture and creative problem-solving to implement the \texttt{-Dmaven.test.failure.ignore=true} solution. Understanding FastMCP's decorator architecture demanded hands-on experimentation and reasoning about software design patterns. Analyzing 93.50\% line coverage across 158 classes required interpreting metrics in context, understanding testing theory, and making strategic decisions about coverage targets.
+
+Software testing will always require human judgment for test correctness, edge case identification, and quality assessment. But automating the mechanical aspects---executing tests, parsing coverage, identifying gaps, generating templates, managing version control---frees developers to focus on these higher-level concerns. As someone who has always been drawn to systems that ``just work,'' building this intelligent testing agent reminded me that the best automation doesn't eliminate human involvement; it amplifies human capability by handling tedious tasks while surfacing insights that enable better decisions.
+
+The future of software testing lies not in replacing developers with AI, but in creating symbiotic relationships where AI handles rote tasks while developers apply creativity, domain knowledge, and critical thinking to ensure quality. This project represents one small step toward that future---a future where human expertise remains central, augmented but never replaced by machine intelligence. The symbiotic relationship between AI assistance and human judgment produced better results than either could achieve alone, but only because human expertise guided the process at every critical juncture.
+
+\begin{thebibliography}{00}
+\bibitem{b1} FastMCP Documentation. ``Getting Started.'' FastMCP, 2024. Available: https://github.com/jlowin/fastmcp
+\bibitem{b2} Apache Maven Project. ``Maven Lifecycle Reference.'' Apache Software Foundation, 2024. Available: https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
+\bibitem{b3} JaCoCo Project. ``JaCoCo Java Code Coverage Library.'' EclEmma, 2024. Available: https://www.jacoco.org/jacoco/
+\bibitem{b4} Model Context Protocol. ``MCP Specification.'' Anthropic, 2024. Available: https://modelcontextprotocol.io/
+\bibitem{b5} Python Software Foundation. ``Python 3.12 Documentation.'' Python.org, 2024. Available: https://docs.python.org/3/
+\bibitem{b6} Oracle Corporation. ``Java SE Documentation.'' Oracle, 2024. Available: https://docs.oracle.com/en/java/javase/
+\bibitem{b7} JUnit Team. ``JUnit 4 Documentation.'' JUnit.org, 2024. Available: https://junit.org/junit4/
+\bibitem{b8} Git Development Community. ``Git Documentation.'' Git-SCM, 2024. Available: https://git-scm.com/doc
+\bibitem{b9} Apache Maven Project. ``Maven Surefire Plugin.'' Apache Software Foundation, 2024. Available: https://maven.apache.org/surefire/maven-surefire-plugin/
+\bibitem{b10} P. Ammann and J. Offutt, \textit{Introduction to Software Testing}, 2nd ed. Cambridge University Press, 2016.
+\bibitem{b11} Apache Commons. ``Commons Lang Documentation.'' Apache Software Foundation, 2024. Available: https://commons.apache.org/proper/commons-lang/
+\bibitem{b12} GitHub. ``GitHub CLI Manual.'' GitHub, Inc., 2024. Available: https://cli.github.com/manual/
+\end{thebibliography}
+
+\end{document}
