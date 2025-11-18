@@ -5,12 +5,10 @@ Implements tools for automated JUnit test generation, Maven execution,
 coverage analysis, and Git automation.
 """
 
-import os
 import subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Optional
-import json
 
 from fastmcp import FastMCP
 
