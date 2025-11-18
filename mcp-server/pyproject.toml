@@ -1,0 +1,18 @@
+[project]
+name = "testing-agent-mcp"
+version = "1.0.0"
+description = "MCP Server for intelligent test generation and coverage analysis"
+authors = [{name = "Kellen Siczka", email = "ksiczka@depaul.edu"}]
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+    "fastmcp>=0.1.0",
+    "httpx>=0.25.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = []
